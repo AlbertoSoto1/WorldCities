@@ -13,7 +13,7 @@ using System.Text.Json;
 
 namespace WorldCities.Controllers
 {
-  [Route("api/[controller]")]
+  [Route("api/[controller]/[action]")]
   [ApiController]
   public class SeedController : ControllerBase
   {
