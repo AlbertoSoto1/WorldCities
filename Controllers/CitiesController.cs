@@ -132,5 +132,14 @@ namespace WorldCities.Controllers
     {
       return _context.Cities.Any(e => e.Id == id);
     }
+
+    [HttpPost]
+    [Route("IsDupeCity")]
+    public bool IsDupeCity(City city)
+    {
+      return _context.Cities.Any(
+        e => e.Name == city.Name && e.Lat == city.Lat && e.Lon == city.Lon 
+        && e.CountryId == city.CountryId && e.Id != city.Id);
+    }
   }
 }
