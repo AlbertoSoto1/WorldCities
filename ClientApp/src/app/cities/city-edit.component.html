@@ -24,8 +24,7 @@
              formControlName="name" required
              placeholder="City name..." class="form-control" />
 
-      <div *ngIf="form.get('name').invalid &&
-           (form.get('name').dirty || form.get('name').touched)"
+      <div *ngIf="hasError('name')"
             class="invalid-feedback">
         <div *ngIf="form.get('name').errors?.required" class="help-block">
           Name is a required.
@@ -44,11 +43,13 @@
              formControlName="lat" required
              placeholder="latitude..." class="form-control" />
 
-      <div *ngIf="form.get('lat').invalid &&
-           (form.get('lat').dirty || form.get('lat').touched)"
+      <div *ngIf="hasError('lat')"
            class="invalid-feedback">
         <div *ngIf="form.get('lat').errors?.required">
           Latitude is a required.
+        </div>
+        <div *ngIf="form.get('lat').errors?.pattern">
+          Latitude requires a positive or negative number with 0-4 decimal values.
         </div>
       </div>
     </div>
@@ -64,10 +65,13 @@
              formControlName="lon" required
              placeholder="Latitude..." class="form-control" />
 
-      <div *ngIf="form.get('lon').invalid && (form.get('lon').dirty || form.get('lon').touched)"
+      <div *ngIf="hasError('lon')"
             class="invalid-feedback">
         <div *ngIf="form.get('lon').errors?.required">
           Longitude is a required field.
+        </div>
+        <div *ngIf="form.get('lon').errors?.pattern">
+          Longitude requires a positive or negative number with 0-4 decimal values.
         </div>
       </div>
     </div>
@@ -84,8 +88,7 @@
         </mat-select>
       </mat-form-field>
 
-      <div *ngIf="form.get('countryId').invalid &&
-           (form.get('country.Id').dirty || form.get('countryId').touched)"
+      <div *ngIf="hasError('countryId')"
            class="invalid-feedback">
         <div *ngIf="form.get('countryId').errors?.required">
           Please select a Country.

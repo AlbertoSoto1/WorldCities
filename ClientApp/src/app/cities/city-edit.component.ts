@@ -8,6 +8,10 @@ import { map } from 'rxjs/operators';
 
 import { City } from './City';
 import { Country } from './../countries/Country';
+import { CityService } from './city.service';
+import { ApiResult } from '../base.service';
+
+import { BaseFormComponent } from '../base.form.component';
 
 @Component({
   selector: 'app-city-edit',
@@ -15,7 +19,7 @@ import { Country } from './../countries/Country';
   styleUrls: ['./city-edit.component.css']
 })
 
-export class CityEditComponent {
+export class CityEditComponent extends BaseFormComponent {
   // The view title
   title: string;
   // The form model
@@ -34,14 +38,23 @@ export class CityEditComponent {
   constructor(
     private activatedRoute: ActivatedRoute,
     private router: Router,
+    private cityService: CityService,
     private http: HttpClient,
-    @Inject('BASE_URL') private baseUrl: string) {}
+    @Inject('BASE_URL') private baseUrl: string) {
+    super();
+  }
 
   ngOnInit() {
     this.form = new FormGroup({
       name: new FormControl('', Validators.required),
-      lat: new FormControl('', Validators.required),
-      lon: new FormControl('', Validators.required),
+      lat: new FormControl('', [
+        Validators.required,
+        Validators.pattern('^[-]?[0-9]+(\.[0-9]{1,4})?$')
+      ]),
+      lon: new FormControl('', [
+        Validators.required,
+        Validators.pattern('^[-]?[0-9]+(\.[0-9]{1,4})?$')
+      ]),
       countryId: new FormControl('')
     }, null, this.isDupeCity());
 
@@ -77,13 +90,16 @@ export class CityEditComponent {
 
   loadCountries() {
     //fetch all the countries from the server
-    var url = this.baseUrl + "api/countries";
-    var params = new HttpParams()
-      .set("pageSize", "9999")
-      .set("sortColumn", "name");
-
-    this.http.get<any>(url, { params }).subscribe(result => {
+    this.cityService.getCountries<ApiResult<Country>>(
+      0,
+      9999,
+      "name",
+      null,
+      null,
+      null
+    ).subscribe(result => {
       this.countries = result.data;
+
     }, error => console.error(error));
   }
 
@@ -97,26 +113,26 @@ export class CityEditComponent {
 
     if (this.id) {
       // EDIT MODE
+      this.cityService.put<City>(city)
+      .subscribe(result => {
+          console.log("City " + city.id + " has been updated.");
+          this.router.navigate(['/cities']);
 
-      var url = this.baseUrl + "api/citites/" + this.city.id;
+      }, error => {
+        console.error(error);
+      });
 
-      this.http.put<City>(url, city).subscribe(result => {
-        console.log("City " + city.id + " has been updated.");
-
-        // go back to cities view
-        this.router.navigate(['/cities']);
-      }, error => console.log(error));
     } else {
       // ADD NEW MODE
-
-      var url = this.baseUrl + "api/cities";
-
-      this.http.post<City>(url, city).subscribe(result => {
-        console.log("City " + result.id + " has been created.");
-
-        // og back to cities view
+      this.cityService.post<City>(city)
+      .subscribe(result => {
+        console.log("City " + result.id + "has been created.");
+        // go to back to cities view
         this.router.navigate(['/cities']);
-      }, error => console.log(error));
+
+      }, error => {
+        console.error(error);
+      });
     }
   }
 
@@ -130,9 +146,8 @@ export class CityEditComponent {
       city.lon = this.form.get("lon").value;
       city.countryId = this.form.get("countryId").value;
 
-      var url = this.baseUrl + "api/cities/IsDupeCity";
-
-      return this.http.post<boolean>(url, city).pipe(map(result => {
+      return this.cityService.isDupeCity(city)
+      .pipe(map(result => {
         return (result ? {isDupeCity: true} : null);
       }));
     }
